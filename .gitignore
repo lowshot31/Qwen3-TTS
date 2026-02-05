@@ -22,3 +22,11 @@ wheels/
 .vscode/
 venv/
 env/
+
+# TTS output files
+*.wav
+output_*.wav
+
+# Temporary files
+*.tmp
+*.log
