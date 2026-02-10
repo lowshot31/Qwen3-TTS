@@ -5,8 +5,10 @@ from typing import Optional, List
 class VoiceRegisterRequest(BaseModel):
     """커스텀 보이스 등록 요청"""
     voice_name: str = Field(..., description="보이스 이름")
-    ref_text: str = Field(..., description="참조 오디오의 텍스트 (음성 파일에서 말한 내용)")
-    language: str = Field(default="Auto", description="언어 (Auto, Korean, English, Chinese, Japanese 등)")
+    ref_text: str = Field(..., description="참조 오디오의 텍스트")
+    language: str = Field(default="Auto", description="언어")
+    start_sec: Optional[float] = Field(default=None, description="시작 시간 (초)")
+    duration: Optional[float] = Field(default=None, description="자를 길이 (초)")
     
     class Config:
         json_schema_extra = {
@@ -30,6 +32,7 @@ class TTSGenerateRequest(BaseModel):
     text: str = Field(..., description="음성으로 변환할 텍스트")
     voice_id: str = Field(..., description="사용할 보이스 ID")
     language: str = Field(default="Auto", description="언어 (Auto, Korean, English, Chinese, Japanese 등)")
+    stream: bool = Field(default=True, description="실시간 스트리밍 여부")
     
     class Config:
         json_schema_extra = {

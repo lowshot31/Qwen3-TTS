@@ -52,32 +52,43 @@ class VoiceManager:
         audio_file_path: str,
         voice_name: str,
         ref_text: str,
-        language: str = "Auto"
+        language: str = "Auto",
+        start_sec: Optional[float] = None,
+        duration: Optional[float] = None
     ) -> str:
         """
-        새로운 보이스 등록
-        
-        Args:
-            audio_file_path: 업로드된 오디오 파일 경로
-            voice_name: 보이스 이름
-            ref_text: 참조 오디오의 텍스트
-            language: 언어
-        
-        Returns:
-            voice_id: 생성된 보이스 ID
+        새로운 보이스 등록 (시간 지정 시에만 자르기 작동)
         """
-        # 고유 ID 생성
         voice_id = f"voice_{uuid.uuid4().hex[:12]}"
+        voice_file_path = self.voices_dir / f"{voice_id}.wav"
         
-        # 파일 확장자 추출
-        file_ext = Path(audio_file_path).suffix
-        
-        # 보이스 파일 저장 경로
-        voice_file_path = self.voices_dir / f"{voice_id}{file_ext}"
-        
-        # 파일 복사
-        shutil.copy2(audio_file_path, voice_file_path)
-        logger.info(f"📁 보이스 파일 저장: {voice_file_path}")
+        try:
+            import subprocess
+            
+            # 자르기 옵션 구성
+            ffmpeg_cmd = ["static_ffmpeg", "-y"]
+            
+            if start_sec is not None and duration is not None:
+                logger.info(f"✂️ 정밀 절단 사용: {start_sec}초~{start_sec+duration}초")
+                ffmpeg_cmd.extend(["-ss", str(start_sec), "-t", str(duration)])
+            else:
+                logger.info(f"🔄 전체 오디오 변환 모드")
+                
+            ffmpeg_cmd.extend([
+                "-i", audio_file_path,
+                "-acodec", "pcm_s16le", "-ar", "16000", "-ac", "1", 
+                str(voice_file_path)
+            ])
+            
+            subprocess.run(ffmpeg_cmd, check=True, capture_output=True)
+            logger.info(f"📁 보이스 파일 저장 완료: {voice_file_path}")
+        except Exception as e:
+            logger.error(f"❌ 오디오 변환 실패: {e}")
+            # 변환 실패 시 원본 복사 시도 (fallback)
+            file_ext = Path(audio_file_path).suffix
+            voice_file_path = self.voices_dir / f"{voice_id}{file_ext}"
+            shutil.copy2(audio_file_path, voice_file_path)
+            logger.warning(f"⚠️ 원본 파일 그대로 저장됨 (변환 실패): {voice_file_path}")
         
         # 메타데이터 저장
         db = self._load_db()
