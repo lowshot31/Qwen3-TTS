@@ -2,8 +2,8 @@ import requests
 import os
 
 URL = "http://localhost:8000/voices/register"
-VOICE_FILE = r"C:\음성파일\last_kids.m4a"
-REF_TEXT = "근데 골반이 진짜 넓어 망내는 역시 가슴보다는골반..여러분들은 제 방송의 묘미가 뭐라고생각하세여"
+VOICE_FILE = r"<YOUR_WAV_DIR>"
+REF_TEXT = "<YOUR_VOCAL_TEXT >"
 VOICE_NAME = "클로에_최종본"
 
 # 핵심: 로컬에서 성공했던 그 시간만큼만 서버에서도 딱 자릅니다!
